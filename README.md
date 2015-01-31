@@ -1,2 +1,2 @@
-# FuckMeu
-UofT Hacks - Snapchat for location based messaging
+# GeoChat
+UofT Hacks - GeoCached messaging
