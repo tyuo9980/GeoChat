@@ -2,6 +2,7 @@ package jpdk.geochat;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -9,9 +10,19 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.InputStream;
+import java.util.ArrayList;
 
 
 public class ComposeActivity extends Activity {
@@ -20,6 +31,8 @@ public class ComposeActivity extends Activity {
     double lat = 0.0;
     double lng = 0.0;
     int duration = 0;
+
+    String submitURL = "http://geochat-api.herokuapp.com/messages";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,14 +49,15 @@ public class ComposeActivity extends Activity {
         setContentView(R.layout.activity_compose);
         getActionBar().setDisplayHomeAsUpEnabled(true);
 
+        /*
         Button submitButton = (Button) findViewById(R.id.submitButton);
         submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //Toast.makeText(getApplicationContext(), "Message Posted!", Toast.LENGTH_SHORT);
-                System.out.println("Message Posted!");
+                //System.out.println("Message Posted!");
             }
-        });
+        });*/
 
         final TextView charLeft = (TextView) findViewById(R.id.charLeftText);
         final EditText messageArea = (EditText) findViewById(R.id.messageArea);
@@ -84,73 +98,85 @@ public class ComposeActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
-    /*
-    public submitMessage(Message message){
-        Criteria criteria = new Criteria();
-        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        String provider = locationManager.getBestProvider(criteria, false);
-        Location location = locationManager.getLastKnownLocation(provider);
-        double lat =  location.getLatitude();
-        double lng = location.getLongitude();
-        ArrayList<Double> coordinate = new ArrayList<Double>();
-        coordinate.add(lat);
-        coordinate.add(lng);
+    public void submit(View view) {
+        /*
+        Calendar c = Calendar.getInstance();
+        long ms = c.getTimeInMillis();
+        ms = Integer.valueOf(((EditText) findViewById(R.id.duration)).toString());
+        Message message = new Message("-1", ((EditText) findViewById(R.id.messageArea)).toString(), lat, lng, "", ms, duration);
+        */
+        String message = findViewById(R.id.messageArea).toString();
+        System.out.println(message);
+        submitMessage(message);
 
-        String result = "";
-        InputStream inputStream = null;
+        new SubmitMessageTask().execute(message);
 
-        try {
-            String get = retrieveURL;
+        finish();
+    }
 
-            get = get ;
+    private class SubmitMessageTask extends AsyncTask<String, Void, String> {
 
-            HttpClient httpclient = new DefaultHttpClient();
-            HttpPost httpPost = new HttpPost(get);
+        @Override
+        protected String doInBackground(String... params) {
+            String message = params[0];
 
+            ArrayList<Double> coordinate = new ArrayList<Double>();
+            coordinate.add(lat);
+            coordinate.add(lng);
+
+            String result = "";
+            InputStream inputStream = null;
             String json = "";
 
+            try {
+                HttpClient httpclient = new DefaultHttpClient();
+                HttpPost httpPost = new HttpPost(submitURL);
 
-            JSONArray jsonArray = new JSONArray(coordinate);
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("loc", jsonArray);
+                JSONArray jsonArray = new JSONArray(coordinate);
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("loc", jsonArray);
+                jsonObject.put("message", message);
 
-            JSONArray jsonArray2 = new JSONArray();
-            jsonArray2.put(jsonObject);
+                json = jsonObject.toString();
 
-            //json = jsonArray2.toString();
-            json = jsonObject.toString();
+                System.out.println(json);
 
-            System.out.println(json);
+                StringEntity se = new StringEntity(json);
+                httpPost.setEntity(se);
 
-            StringEntity se = new StringEntity(json);
-            httpPost.setEntity(se);
+                httpPost.setHeader("Accept", "application/json");
+                httpPost.setHeader("Content-type", "application/json");
 
-            httpPost.setHeader("Accept", "application/json");
-            httpPost.setHeader("Content-type", "application/json");
+                HttpResponse httpResponse = httpclient.execute(httpPost);
+                inputStream = httpResponse.getEntity().getContent();
 
-            HttpResponse httpResponse = httpclient.execute(httpPost);
-            inputStream = httpResponse.getEntity().getContent();
-
-            if(inputStream != null) {
-                result = convertInputStreamToString(inputStream);
-
-                parseJSON(result);
-
-                if (MapsActivity.isForeground) {
-                    System.out.println("Notifying!");
-                    PopNotifications();
+                if(inputStream != null) {
+                    System.out.println("msg submit success");
+                }
+                else {
+                    System.out.println("msg submit failed");
                 }
             }
-            else {
-                result = "Did not work!";
+            catch(Exception e){
+                e.printStackTrace();
             }
 
+            return "message submitted";
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
             System.out.println(result);
         }
-        catch(Exception e){
-            e.printStackTrace();
-        }
 
+        @Override
+        protected void onPreExecute() {}
 
-    }*/
+        @Override
+        protected void onProgressUpdate(Void... values) {}
+    }
+
+    public void submitMessage(String message){
+
+    }
 }

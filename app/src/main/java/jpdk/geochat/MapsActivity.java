@@ -55,6 +55,8 @@ public class MapsActivity extends ActionBarActivity {
 
         //start polling service
         startService(new Intent(this, PollingService.class));
+
+        //updateMarkers();
     }
 
     @Override
@@ -81,6 +83,12 @@ public class MapsActivity extends ActionBarActivity {
             case R.id.map_friends:
                 openFriends();
                 return true;
+            case R.id.map_messages:
+                openMessages();
+                return true;
+            case R.id.map_logoff:
+                logOff();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -90,6 +98,21 @@ public class MapsActivity extends ActionBarActivity {
         Intent intent = new Intent(this, FriendsActivity.class);
         startActivity(intent);
     }
+
+    private void openMessages(){
+        Intent intent = new Intent(this, MessagesActivity.class);
+        startActivity(intent);
+    }
+
+    private void logOff(){
+        /*Session session = Session.getActiveSession();
+        if(session != null && session.isOpened()){
+            session.closeAndClearTokenInformation();
+        }
+        finish();
+        */
+    }
+
 
     private void setUpMapIfNeeded() {
         // Do a null check to confirm that we have not already instantiated the map.
@@ -106,10 +129,9 @@ public class MapsActivity extends ActionBarActivity {
 
                     @Override
                     public void onMyLocationChange(Location loc) {
-                        // TODO Auto-generated method stub
                         currentLocation = loc;
 
-                        map.clear();
+                        updateMarkers();
                     }
                 });
             }
@@ -120,11 +142,13 @@ public class MapsActivity extends ActionBarActivity {
         Intent intent = new Intent(this, ComposeActivity.class);
         intent.putExtra("lat", currentLocation.getLatitude());
         intent.putExtra("lng", currentLocation.getLongitude());
-        startActivity(intent);
+        startActivityForResult(intent, 0);
     }
 
     public static void updateMarkers(){
         map.clear();
+
+        System.out.println("updating markers: " + messages.size());
 
         for (int i = 0; i < messages.size(); i++){
             map.addMarker(new MarkerOptions().position(new LatLng(messages.get(i).lat, messages.get(i).lng)));

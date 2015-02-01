@@ -34,6 +34,8 @@ public class PollingService extends Service implements LocationListener
     private static final String TAG = "Pollingservice";
     private String retrieveURL = "http://geochat-api.herokuapp.com/messages";
 
+    public double lat = 0, lng = 0;
+
     LocationManager locationManager;
     boolean initialLoad = true;
 
@@ -48,7 +50,6 @@ public class PollingService extends Service implements LocationListener
         Log.d(TAG, "onCreate");
 
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-
     }
 
     @Override
@@ -56,11 +57,10 @@ public class PollingService extends Service implements LocationListener
         System.out.println("Congrats! MyService started");
         Log.d(TAG, "onStart");
 
-        //UpdateMessages();
-
-
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 5, this);
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 5, this);
+
+        //RetrieveAllMessages();
     }
 
     @Override
@@ -69,35 +69,15 @@ public class PollingService extends Service implements LocationListener
         Log.d(TAG, "onDestroy");
     }
 
-    private static String convertStreamToString(InputStream is) {
-
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-        StringBuilder sb = new StringBuilder();
-
-        String line = null;
-        try {
-            while ((line = reader.readLine()) != null) {
-                sb.append(line + "\n");
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                is.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return sb.toString();
-    }
-
     public void UpdateMessages() {
         new UpdateMessageTask().execute("");
     }
 
+    /*
     public void RetrieveAllMessages(){
-        //new RetrieveAllMessageTask().execute("");
+        new RetrieveAllMessageTask().execute("");
     }
+    */
 
     public void PopNotifications() {
 
@@ -110,6 +90,7 @@ public class PollingService extends Service implements LocationListener
 
     public void parseJSON(String json) {
         System.out.println("parsing!");
+        //System.out.println(json);
 
         ArrayList<Message> newMessages = new ArrayList<Message>();
 
@@ -138,7 +119,8 @@ public class PollingService extends Service implements LocationListener
                 //message.speak();
             }
 
-            MapsActivity.messages.addAll(newMessages);
+            //MapsActivity.messages.addAll(newMessages);
+            MapsActivity.messages = newMessages;
         }
         catch(Exception e){
             e.printStackTrace();
@@ -149,13 +131,14 @@ public class PollingService extends Service implements LocationListener
     public void onLocationChanged(Location location) {
         if (initialLoad) {
             initialLoad = false;
-            RetrieveAllMessages();
+            //RetrieveAllMessages();
         }
 
         UpdateMessages();
+        //MapsActivity.updateMarkers();
 
-        double lat =  location.getLatitude();
-        double lng = location.getLongitude();
+        lat =  location.getLatitude();
+        lng = location.getLongitude();
 
         System.out.println(lat + " " + lng);
     }
@@ -184,8 +167,8 @@ public class PollingService extends Service implements LocationListener
             LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
             String provider = locationManager.getBestProvider(criteria, false);
             Location location = locationManager.getLastKnownLocation(provider);
-            double lat =  location.getLatitude();
-            double lng = location.getLongitude();
+
+            System.out.println("bg " + lat + " " + lng);
 
             String result = "";
             InputStream inputStream = null;
@@ -221,7 +204,6 @@ public class PollingService extends Service implements LocationListener
             System.out.println(builder.toString());
 
             parseJSON(builder.toString());
-            MapsActivity.updateMarkers();
 
             return "Done";
         }
@@ -237,77 +219,4 @@ public class PollingService extends Service implements LocationListener
         @Override
         protected void onProgressUpdate(Void... values) {}
     }
-
-    private class RetrieveAllMessageTask extends AsyncTask<String, Void, String> {
-        private String convertInputStreamToString(InputStream inputStream) throws IOException{
-            BufferedReader bufferedReader = new BufferedReader( new InputStreamReader(inputStream));
-            String line = "";
-            String result = "";
-            while((line = bufferedReader.readLine()) != null)
-                result += line;
-
-            inputStream.close();
-            return result;
-        }
-
-        @Override
-        protected String doInBackground(String... params) {
-            Criteria criteria = new Criteria();
-            LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            String provider = locationManager.getBestProvider(criteria, false);
-            Location location = locationManager.getLastKnownLocation(provider);
-            double lat =  location.getLatitude();
-            double lng = location.getLongitude();
-
-            String result = "";
-            InputStream inputStream = null;
-
-            StringBuilder builder = new StringBuilder();
-            HttpClient client = new DefaultHttpClient();
-            HttpGet httpGet = new HttpGet(retrieveURL);
-
-            try{
-                HttpResponse response = client.execute(httpGet);
-                StatusLine statusLine = response.getStatusLine();
-                int statusCode = statusLine.getStatusCode();
-
-                if(statusCode == 200){
-                    HttpEntity entity = response.getEntity();
-                    InputStream content = entity.getContent();
-
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(content));
-                    String line;
-
-                    while((line = reader.readLine()) != null){
-                        builder.append(line);
-                    }
-                } else {
-                    System.out.println("failed");
-                }
-            }catch(ClientProtocolException e){
-                e.printStackTrace();
-            } catch (IOException e){
-                e.printStackTrace();
-            }
-
-            System.out.println(builder.toString());
-
-            parseJSON(builder.toString());
-            MapsActivity.updateMarkers();
-
-            return "Done";
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            System.out.println(result);
-        }
-
-        @Override
-        protected void onPreExecute() {}
-
-        @Override
-        protected void onProgressUpdate(Void... values) {}
-    }
-
 }

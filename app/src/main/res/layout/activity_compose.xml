@@ -27,6 +27,7 @@
         android:layout_height="wrap_content"
         android:text="Submit Message"
         android:id="@+id/submitButton"
+        android:onClick="submit"
         android:layout_below="@+id/messageArea"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true" />
