@@ -57,8 +57,8 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="New Text"
-        android:id="@+id/textView"
+        android:text="@string/Date_to_send"
+        android:id="@+id/Date_to_send"
         android:layout_centerVertical="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
@@ -68,13 +68,13 @@
         android:layout_height="wrap_content"
         android:id="@+id/spinner"
         android:layout_centerVertical="true"
-        android:layout_toRightOf="@+id/textView"
-        android:layout_toEndOf="@+id/textView" />
+        android:layout_toRightOf="@+id/Date_to_send"
+        android:layout_toEndOf="@+id/Date_to_send" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="New Text"
+        android:text="@string/Date_to_send"
         android:id="@+id/textView2"
         android:layout_above="@+id/spinner"
         android:layout_alignParentLeft="true"

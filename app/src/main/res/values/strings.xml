@@ -14,6 +14,8 @@
     <string name="menu_friends">Friends</string>
     <string name="menu_logoff">Log Off</string>
     <string name="menu_messages">Messages</string>
+    <string name="Expiry">Expiry</string>
+    <string name="Date_to_send">Date to send</string>
     <string-array name="expiry">
         <item>Never</item>
         <item>1 day</item>

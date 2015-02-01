@@ -1,6 +1,7 @@
 package jpdk.geochat;
 
 import android.app.Activity;
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -11,6 +12,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.widget.ArrayAdapter;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -25,6 +27,7 @@ import org.json.JSONObject;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 
 public class ComposeActivity extends Activity {
@@ -33,6 +36,8 @@ public class ComposeActivity extends Activity {
     double lat = 0.0;
     double lng = 0.0;
     int duration = 0;
+
+
 
     String submitURL = "http://geochat-api.herokuapp.com/messages";
 
@@ -186,4 +191,37 @@ public class ComposeActivity extends Activity {
     public void submitMessage(String message){
 
     }
+
+    private DatePicker dpResult;
+    private int year;
+    private int month;
+    private int day;
+
+    // display current date
+    public void setCurrentDateOnView() {
+
+        dpResult = (DatePicker) findViewById(R.id.datePicker);
+
+        final Calendar c = Calendar.getInstance();
+        year = c.get(Calendar.YEAR);
+        month = c.get(Calendar.MONTH);
+        day = c.get(Calendar.DAY_OF_MONTH);
+
+        // set current date into datepicker
+        dpResult.init(year, month, day, null);
+
+    }
+
+    private DatePickerDialog.OnDateSetListener datePickerListener
+            = new DatePickerDialog.OnDateSetListener() {
+
+        // when dialog box is closed, below method will be called.
+        public void onDateSet(DatePicker view, int selectedYear,
+                              int selectedMonth, int selectedDay) {
+            year = selectedYear;
+            month = selectedMonth;
+            day = selectedDay;
+        }
+    };
+
 }
