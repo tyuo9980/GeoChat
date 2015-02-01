@@ -31,12 +31,16 @@ public class MapsActivity extends ActionBarActivity implements LocationListener,
     GoogleApiClient mGoogleApiClient;
     Location myLocation = null;
 
+    public static boolean isForeground;
+
     public static ArrayList<Message> messages = new ArrayList<Message>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+        isForeground = true;
+
         setUpMapIfNeeded();
         map.setMyLocationEnabled(true);
 
@@ -59,8 +63,15 @@ public class MapsActivity extends ActionBarActivity implements LocationListener,
     }
 
     @Override
+    protected void onPause(){
+        super.onPause();
+        isForeground = false;
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
+        isForeground = true;
 
         buildGoogleApiClient();
         map.setMapType(GoogleMap.MAP_TYPE_NORMAL);

@@ -10,6 +10,7 @@ import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import org.apache.http.HttpResponse;
@@ -92,7 +93,11 @@ public class PollingService extends Service implements LocationListener
     }
 
     public void PopNotifications() {
-
+        NotificationCompat.Builder mBuilder =
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.notif_icon)
+                        .setContentTitle("New Message Discovered!")
+                        .setContentText("Click to locate!");
     }
 
     public void parseJSON(String json) {
@@ -126,7 +131,7 @@ public class PollingService extends Service implements LocationListener
     //Location Listener
     public void onLocationChanged(Location location) {
         UpdateMessages();
-        PopNotifications();
+
         System.out.println("Moved 5 Meters!");
     }
 
@@ -193,6 +198,10 @@ public class PollingService extends Service implements LocationListener
                     result = convertInputStreamToString(inputStream);
 
                     parseJSON(result);
+
+                    if (MapsActivity.isForeground) {
+                        PopNotifications();
+                    }
                 }
                 else {
                     result = "Did not work!";
