@@ -18,4 +18,4 @@
   <item android:state_checked="true" android:drawable="@drawable/com_facebook_button_check_on" />
   <item android:drawable="@drawable/com_facebook_button_check_off" />
 </selector>
-<!-- From: file:/Users/peterli/Desktop/GeoChat/facebook/res/drawable/com_facebook_button_check.xml -->
+<!-- From: file:/C:/Users/Kevin/Desktop/GeoChat/facebook/res/drawable/com_facebook_button_check.xml -->

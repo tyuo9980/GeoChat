@@ -6,4 +6,12 @@
     <item android:id="@+id/map_friends"
 
         android:title="@string/menu_friends"/>
+    <item android:id="@+id/Messages"
+
+        android:title="@string/messages"
+        android:onClick="messages"/>
+    <item android:id="@+id/logoff"
+
+        android:title="@string/logoff"
+        android:onClick="logoff"/>
 </menu>

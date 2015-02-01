@@ -130,4 +130,13 @@ public class MapsActivity extends ActionBarActivity {
             map.addMarker(new MarkerOptions().position(new LatLng(messages.get(i).lat, messages.get(i).lng)));
         }
     }
+
+    public void messages(View view) {
+        Intent intent = new Intent(this, MessagesActivity.class);
+        startActivity(intent);
+    }
+
+    public void logoff(View view) {
+
+    }
 }
