@@ -10,9 +10,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.TextView;
 
 import org.apache.http.HttpResponse;
@@ -49,13 +47,6 @@ public class ComposeActivity extends Activity {
         getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
 
         setContentView(R.layout.activity_compose);
-
-        Spinner spinner = (Spinner) findViewById(R.id.spinner);
-
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-                R.array.expiry, android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(adapter);
 
         final TextView charLeft = (TextView) findViewById(R.id.charLeftText);
         final EditText messageArea = (EditText) findViewById(R.id.messageArea);
@@ -103,10 +94,11 @@ public class ComposeActivity extends Activity {
         ms = Integer.valueOf(((EditText) findViewById(R.id.duration)).toString());
         Message message = new Message("-1", ((EditText) findViewById(R.id.messageArea)).toString(), lat, lng, "", ms, duration);
         */
-        String message = findViewById(R.id.messageArea).toString();
+        String message = ((EditText)findViewById(R.id.messageArea)).getText().toString();
         System.out.println(message);
 
         new SubmitMessageTask().execute(message);
+
 
         finish();
     }
@@ -172,4 +164,5 @@ public class ComposeActivity extends Activity {
         @Override
         protected void onProgressUpdate(Void... values) {}
     }
+
 }

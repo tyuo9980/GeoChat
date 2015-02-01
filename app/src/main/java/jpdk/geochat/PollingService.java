@@ -123,16 +123,17 @@ public class PollingService extends Service implements LocationListener
                 String sendAt = jsonMsg.getString("sendAt");
                 int dur = jsonMsg.getInt("duration");
 
+                int newM = msgArray.length() - MapsActivity.messages.size();
 
-                if (msgArray.length() > MapsActivity.messages.size() && i > MapsActivity.messages.size()) {
+                //if (i < msgArray.length() - MapsActivity.messages.size()) {
                     Message message = new Message(user, msg, id, lat, lng, sentAt, sendAt, dur);
                     newMessages.add(message);
 
                     //message.speak();
-                }
+                //}
             }
 
-            MapsActivity.messages.addAll(newMessages);
+            MapsActivity.messages = newMessages;
             MapsActivity.updateMarkers();
 
             if (newMessages.size() > 0) {
