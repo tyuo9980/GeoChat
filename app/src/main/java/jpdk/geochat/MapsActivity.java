@@ -1,7 +1,11 @@
 package jpdk.geochat;
 
+import android.content.Context;
+import android.content.Intent;
+import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
@@ -10,6 +14,7 @@ import android.view.MenuItem;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -18,11 +23,15 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.ArrayList;
+
 public class MapsActivity extends ActionBarActivity implements LocationListener, OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     GoogleMap map;
     GoogleApiClient mGoogleApiClient;
     Location myLocation = null;
+
+    public static ArrayList<Message> messages = new ArrayList<Message>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +39,23 @@ public class MapsActivity extends ActionBarActivity implements LocationListener,
         setContentView(R.layout.activity_maps);
         setUpMapIfNeeded();
         map.setMyLocationEnabled(true);
+
+        Criteria criteria = new Criteria();
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        String provider = locationManager.getBestProvider(criteria, false);
+        Location location = locationManager.getLastKnownLocation(provider);
+        double lat =  location.getLatitude();
+        double lng = location.getLongitude();
+        LatLng coordinate = new LatLng(lat, lng);
+
+        CameraUpdate center = CameraUpdateFactory.newLatLng(coordinate);
+        CameraUpdate zoom = CameraUpdateFactory.zoomTo(15);
+
+        map.moveCamera(center);
+        map.animateCamera(zoom);
+
+        //start polling service
+        startService(new Intent(this, PollingService.class));
     }
 
     @Override
@@ -39,10 +65,6 @@ public class MapsActivity extends ActionBarActivity implements LocationListener,
         buildGoogleApiClient();
         map.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         map.setMyLocationEnabled(true);
-        /*
-        */
-
-
     }
 
     protected synchronized void buildGoogleApiClient() {
@@ -55,16 +77,12 @@ public class MapsActivity extends ActionBarActivity implements LocationListener,
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_maps, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
