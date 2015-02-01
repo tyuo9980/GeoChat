@@ -21,4 +21,16 @@ public class Message {
         sendAt = sd;
         duration = d;
     }
+
+    public void speak(){
+        System.out.println("user " + user);
+        System.out.println("msg " + message);
+        System.out.println("id " + id);
+        System.out.println("lat " + lat);
+        System.out.println("lng " + lng);
+        System.out.println("sent " + sentAt);
+        System.out.println("send " + sendAt);
+        System.out.println("dur " + duration);
+    }
 }
+

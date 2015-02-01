@@ -13,10 +13,12 @@ import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.StatusLine;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -26,7 +28,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class PollingService extends Service implements LocationListener
 {
@@ -93,6 +94,7 @@ public class PollingService extends Service implements LocationListener
     }
 
     public void PopNotifications() {
+
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(R.drawable.notif_icon)
@@ -101,38 +103,49 @@ public class PollingService extends Service implements LocationListener
     }
 
     public void parseJSON(String json) {
+        System.out.println("parsing!");
+
         ArrayList<Message> newMessages = new ArrayList<Message>();
 
         try {
             JSONArray msgArray = new JSONArray(json);
 
+
             for (int i = 0; i < msgArray.length(); i++){
                 JSONObject jsonMsg = msgArray.getJSONObject(i);
 
-                String id = jsonMsg.getString("id");
-                String user = jsonMsg.getString("user");
+                String id = jsonMsg.getString("_id");
+                //String user = jsonMsg.getString("user");
+                String user = "";
+
                 String msg = jsonMsg.getString("message");
                 JSONArray coordinate = jsonMsg.getJSONArray("loc");
-                double lat = Double.parseDouble(coordinate.getJSONObject(0).toString());
-                double lng = Double.parseDouble(coordinate.getJSONObject(0).toString());
+                double lat = coordinate.getDouble(0);
+                double lng = coordinate.getDouble(1);
                 String sentAt = jsonMsg.getString("sentAt");
                 String sendAt = jsonMsg.getString("sendAt");
                 int dur = jsonMsg.getInt("duration");
 
                 Message message = new Message (user, msg, id, lat, lng, sentAt, sendAt, dur);
                 newMessages.add(message);
+
+                //message.speak();
             }
 
             MapsActivity.messages.addAll(newMessages);
         }
-        catch(Exception e){}
+        catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
     //Location Listener
     public void onLocationChanged(Location location) {
-        UpdateMessages();
+        //UpdateMessages();
+        double lat =  location.getLatitude();
+        double lng = location.getLongitude();
 
-        System.out.println("Moved 5 Meters!");
+        System.out.println(lat + " " + lng);
     }
 
     public void onStatusChanged(String provider, int status, Bundle extras) {}
@@ -161,63 +174,50 @@ public class PollingService extends Service implements LocationListener
             Location location = locationManager.getLastKnownLocation(provider);
             double lat =  location.getLatitude();
             double lng = location.getLongitude();
-            String[] coordinate = {Double.toString(lat), Double.toString(lng)};
 
             String result = "";
             InputStream inputStream = null;
 
-            try {
-                HttpClient httpclient = new DefaultHttpClient();
-                HttpPost httpPost = new HttpPost(retrieveURL);
+            StringBuilder builder = new StringBuilder();
+            HttpClient client = new DefaultHttpClient();
+            HttpGet httpGet = new HttpGet(retrieveURL + "?lat=" + lat + "&lng=" + lng + "&since=1");
 
-                String json = "";
+            try{
+                HttpResponse response = client.execute(httpGet);
+                StatusLine statusLine = response.getStatusLine();
+                int statusCode = statusLine.getStatusCode();
 
+                if(statusCode == 200){
+                    HttpEntity entity = response.getEntity();
+                    InputStream content = entity.getContent();
 
-                JSONArray jsonArray = new JSONArray(Arrays.asList(coordinate));
-                JSONObject jsonObject = new JSONObject();
-                jsonObject.put("loc", jsonArray);
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(content));
+                    String line;
 
-                JSONArray jsonArray2 = new JSONArray();
-                jsonArray2.put(jsonObject);
-
-                json = jsonArray2.toString();
-                //json = jsonObject.toString();
-
-                System.out.println(json);
-
-                StringEntity se = new StringEntity(json);
-                httpPost.setEntity(se);
-
-                httpPost.setHeader("Accept", "application/json");
-                httpPost.setHeader("Content-type", "application/json");
-
-                HttpResponse httpResponse = httpclient.execute(httpPost);
-                inputStream = httpResponse.getEntity().getContent();
-
-                if(inputStream != null) {
-                    result = convertInputStreamToString(inputStream);
-
-                    parseJSON(result);
-
-                    if (MapsActivity.isForeground) {
-                        PopNotifications();
+                    while((line = reader.readLine()) != null){
+                        builder.append(line);
                     }
+                } else {
+                    System.out.println("failed");
                 }
-                else {
-                    result = "Did not work!";
-                }
-
-                System.out.println(result + "t");
-            }
-            catch(Exception e){
+            }catch(ClientProtocolException e){
+                e.printStackTrace();
+            } catch (IOException e){
                 e.printStackTrace();
             }
+
+            System.out.println(builder.toString());
+
+            parseJSON(builder.toString());
+
 
             return "Done";
         }
 
         @Override
-        protected void onPostExecute(String result) {}
+        protected void onPostExecute(String result) {
+            System.out.println(result);
+        }
 
         @Override
         protected void onPreExecute() {}

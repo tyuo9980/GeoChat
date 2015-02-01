@@ -71,4 +71,74 @@ public class ComposeActivity extends Activity {
 
         return super.onOptionsItemSelected(item);
     }
+
+    /*
+    public submitMessage(Message message){
+        Criteria criteria = new Criteria();
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        String provider = locationManager.getBestProvider(criteria, false);
+        Location location = locationManager.getLastKnownLocation(provider);
+        double lat =  location.getLatitude();
+        double lng = location.getLongitude();
+        ArrayList<Double> coordinate = new ArrayList<Double>();
+        coordinate.add(lat);
+        coordinate.add(lng);
+
+        String result = "";
+        InputStream inputStream = null;
+
+        try {
+            String get = retrieveURL;
+
+            get = get ;
+
+            HttpClient httpclient = new DefaultHttpClient();
+            HttpPost httpPost = new HttpPost(get);
+
+            String json = "";
+
+
+            JSONArray jsonArray = new JSONArray(coordinate);
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("loc", jsonArray);
+
+            JSONArray jsonArray2 = new JSONArray();
+            jsonArray2.put(jsonObject);
+
+            //json = jsonArray2.toString();
+            json = jsonObject.toString();
+
+            System.out.println(json);
+
+            StringEntity se = new StringEntity(json);
+            httpPost.setEntity(se);
+
+            httpPost.setHeader("Accept", "application/json");
+            httpPost.setHeader("Content-type", "application/json");
+
+            HttpResponse httpResponse = httpclient.execute(httpPost);
+            inputStream = httpResponse.getEntity().getContent();
+
+            if(inputStream != null) {
+                result = convertInputStreamToString(inputStream);
+
+                parseJSON(result);
+
+                if (MapsActivity.isForeground) {
+                    System.out.println("Notifying!");
+                    PopNotifications();
+                }
+            }
+            else {
+                result = "Did not work!";
+            }
+
+            System.out.println(result);
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+
+
+    }*/
 }

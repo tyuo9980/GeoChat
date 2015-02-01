@@ -27,20 +27,24 @@
             </intent-filter>
         </activity>
         <activity
+            android:screenOrientation="portrait"
             android:name=".ComposeActivity"
             android:label="@string/title_activity_compose"
             android:theme="@android:style/Theme.Holo.Light"
             android:windowSoftInputMode="stateAlwaysVisible" >
         </activity>
         <activity
+            android:screenOrientation="portrait"
             android:name=".MessagesActivity"
             android:label="@string/title_activity_messages" >
         </activity>
         <activity
+            android:screenOrientation="portrait"
             android:name=".FriendsActivity"
             android:label="@string/title_activity_friends" >
         </activity>
         <activity
+            android:screenOrientation="portrait"
             android:name=".MapsActivity"
             android:label="@string/title_activity_maps" >
         </activity>
