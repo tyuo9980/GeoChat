@@ -1,6 +1,7 @@
 package jpdk.geochat;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -15,9 +16,20 @@ import android.widget.TextView;
 
 public class ComposeActivity extends Activity {
 
+    String messageBody = "";
+    double lat = 0.0;
+    double lng = 0.0;
+    int duration = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Intent intent = this.getIntent();
+        lat = intent.getDoubleExtra("lat", 0.0);
+        lng = intent.getDoubleExtra("lng", 0.0);
+
+        System.out.println(lat + " " + lng);
 
         getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
 

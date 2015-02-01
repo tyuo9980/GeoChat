@@ -15,7 +15,7 @@ public class MessagesActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_messages);
 
-        populateList(MapsActivity.messages);
+        //populateList(MapsActivity.messages);
     }
 
 

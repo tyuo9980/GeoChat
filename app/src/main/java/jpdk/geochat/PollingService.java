@@ -35,6 +35,7 @@ public class PollingService extends Service implements LocationListener
     private String retrieveURL = "http://geochat-api.herokuapp.com/messages";
 
     LocationManager locationManager;
+    boolean initialLoad = true;
 
     @Override
     public IBinder onBind(Intent arg0) {
@@ -47,6 +48,7 @@ public class PollingService extends Service implements LocationListener
         Log.d(TAG, "onCreate");
 
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+
     }
 
     @Override
@@ -54,7 +56,8 @@ public class PollingService extends Service implements LocationListener
         System.out.println("Congrats! MyService started");
         Log.d(TAG, "onStart");
 
-        UpdateMessages();
+        //UpdateMessages();
+
 
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 5, this);
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 5, this);
@@ -89,8 +92,11 @@ public class PollingService extends Service implements LocationListener
     }
 
     public void UpdateMessages() {
-        new RetrieveMessageTask().execute("");
+        new UpdateMessageTask().execute("");
+    }
 
+    public void RetrieveAllMessages(){
+        //new RetrieveAllMessageTask().execute("");
     }
 
     public void PopNotifications() {
@@ -141,7 +147,13 @@ public class PollingService extends Service implements LocationListener
 
     //Location Listener
     public void onLocationChanged(Location location) {
-        //UpdateMessages();
+        if (initialLoad) {
+            initialLoad = false;
+            RetrieveAllMessages();
+        }
+
+        UpdateMessages();
+
         double lat =  location.getLatitude();
         double lng = location.getLongitude();
 
@@ -154,7 +166,7 @@ public class PollingService extends Service implements LocationListener
 
     public void onProviderDisabled(String provider) {}
 
-    private class RetrieveMessageTask extends AsyncTask<String, Void, String> {
+    private class UpdateMessageTask extends AsyncTask<String, Void, String> {
         private String convertInputStreamToString(InputStream inputStream) throws IOException{
             BufferedReader bufferedReader = new BufferedReader( new InputStreamReader(inputStream));
             String line = "";
@@ -209,7 +221,79 @@ public class PollingService extends Service implements LocationListener
             System.out.println(builder.toString());
 
             parseJSON(builder.toString());
+            MapsActivity.updateMarkers();
 
+            return "Done";
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            System.out.println(result);
+        }
+
+        @Override
+        protected void onPreExecute() {}
+
+        @Override
+        protected void onProgressUpdate(Void... values) {}
+    }
+
+    private class RetrieveAllMessageTask extends AsyncTask<String, Void, String> {
+        private String convertInputStreamToString(InputStream inputStream) throws IOException{
+            BufferedReader bufferedReader = new BufferedReader( new InputStreamReader(inputStream));
+            String line = "";
+            String result = "";
+            while((line = bufferedReader.readLine()) != null)
+                result += line;
+
+            inputStream.close();
+            return result;
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            Criteria criteria = new Criteria();
+            LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            String provider = locationManager.getBestProvider(criteria, false);
+            Location location = locationManager.getLastKnownLocation(provider);
+            double lat =  location.getLatitude();
+            double lng = location.getLongitude();
+
+            String result = "";
+            InputStream inputStream = null;
+
+            StringBuilder builder = new StringBuilder();
+            HttpClient client = new DefaultHttpClient();
+            HttpGet httpGet = new HttpGet(retrieveURL);
+
+            try{
+                HttpResponse response = client.execute(httpGet);
+                StatusLine statusLine = response.getStatusLine();
+                int statusCode = statusLine.getStatusCode();
+
+                if(statusCode == 200){
+                    HttpEntity entity = response.getEntity();
+                    InputStream content = entity.getContent();
+
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(content));
+                    String line;
+
+                    while((line = reader.readLine()) != null){
+                        builder.append(line);
+                    }
+                } else {
+                    System.out.println("failed");
+                }
+            }catch(ClientProtocolException e){
+                e.printStackTrace();
+            } catch (IOException e){
+                e.printStackTrace();
+            }
+
+            System.out.println(builder.toString());
+
+            parseJSON(builder.toString());
+            MapsActivity.updateMarkers();
 
             return "Done";
         }
