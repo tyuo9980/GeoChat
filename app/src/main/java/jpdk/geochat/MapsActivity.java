@@ -7,23 +7,37 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.facebook.Session;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
 
-public class MapsActivity extends ActionBarActivity {
+public class MapsActivity extends ActionBarActivity implements
+        GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener,
+        LocationListener {
 
     public static boolean isForeground;
+
+    private static final String TAG = "mapactivity";
 
     public static ArrayList<Message> messages = new ArrayList<Message>();
 
@@ -31,13 +45,22 @@ public class MapsActivity extends ActionBarActivity {
     public Location currentLocation = null;
     public String messageBody = null;
 
+    private GoogleApiClient mGoogleApiClient;
+    private LocationRequest mLocationRequest;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         isForeground = true;
 
-        setUpMapIfNeeded();
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addApi(LocationServices.API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
+
+        initializeMap();
 
         Criteria criteria = new Criteria();
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -53,10 +76,51 @@ public class MapsActivity extends ActionBarActivity {
         map.moveCamera(center);
         map.animateCamera(zoom);
 
+        map.getUiSettings().setCompassEnabled(true);
+
         //start polling service
         startService(new Intent(this, PollingService.class));
 
         //updateMarkers();
+    }
+
+    @Override
+    protected void onStart(){
+        super.onStart();
+        mGoogleApiClient.connect();
+    }
+
+    @Override
+    protected void onStop() {
+        // Disconnecting the client invalidates it.
+        mGoogleApiClient.disconnect();
+        super.onStop();
+    }
+
+    @Override
+    public void onConnected(Bundle bundle) {
+        mLocationRequest = LocationRequest.create();
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setInterval(60000);
+        mLocationRequest.setSmallestDisplacement(5);
+        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        Log.i(TAG, "GoogleApiClient connection has been suspend");
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        Log.i(TAG, "GoogleApiClient connection has failed");
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        if(location!=null){
+            currentLocation = location;
+        }
     }
 
     @Override
@@ -105,36 +169,28 @@ public class MapsActivity extends ActionBarActivity {
     }
 
     private void logOff(){
-        /*Session session = Session.getActiveSession();
+        Session session = Session.getActiveSession();
         if(session != null && session.isOpened()){
             session.closeAndClearTokenInformation();
         }
         finish();
-        */
+
     }
 
+    protected void createLocationRequest() {
+        LocationRequest mLocationRequest = new LocationRequest();
+        mLocationRequest.setInterval(10000);
+        mLocationRequest.setFastestInterval(5000);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+    }
 
-    private void setUpMapIfNeeded() {
+    private void initializeMap() {
         // Do a null check to confirm that we have not already instantiated the map.
         if (map == null) {
             // Try to obtain the map from the SupportMapFragment.
-            map = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
-                    .getMap();
+            map = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
             map.setMyLocationEnabled(true);
-            // Check if we were successful in obtaining the map.
-            if (map != null) {
 
-
-                map.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
-
-                    @Override
-                    public void onMyLocationChange(Location loc) {
-                        currentLocation = loc;
-
-                        updateMarkers();
-                    }
-                });
-            }
         }
     }
 
@@ -151,7 +207,12 @@ public class MapsActivity extends ActionBarActivity {
         System.out.println("updating markers: " + messages.size());
 
         for (int i = 0; i < messages.size(); i++){
-            map.addMarker(new MarkerOptions().position(new LatLng(messages.get(i).lat, messages.get(i).lng)));
+            Marker m = map.addMarker(new MarkerOptions()
+                            .position(new LatLng(messages.get(i).lat, messages.get(i).lng))
+                            .snippet(messages.get(i).message)
+                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker))
+                            .title(Integer.toString(i))
+            );
         }
     }
 }

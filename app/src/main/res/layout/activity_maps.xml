@@ -13,7 +13,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:translationX="-10dp"
-        android:translationY="-10dp"
+        android:translationY="-20dp"
         android:src="@drawable/compose"
         android:onClick="compose"
         android:layout_gravity="bottom|right"

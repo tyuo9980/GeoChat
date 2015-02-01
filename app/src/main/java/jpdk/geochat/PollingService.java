@@ -1,5 +1,8 @@
 package jpdk.geochat;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -10,7 +13,6 @@ import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import org.apache.http.HttpEntity;
@@ -37,6 +39,8 @@ public class PollingService extends Service implements LocationListener
     public double lat = 0, lng = 0;
 
     LocationManager locationManager;
+    NotificationManager notificationManager;
+
     boolean initialLoad = true;
 
     @Override
@@ -50,6 +54,7 @@ public class PollingService extends Service implements LocationListener
         Log.d(TAG, "onCreate");
 
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     }
 
     @Override
@@ -57,8 +62,9 @@ public class PollingService extends Service implements LocationListener
         System.out.println("Congrats! MyService started");
         Log.d(TAG, "onStart");
 
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
+        //locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 10, this);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 10, this);
+        //locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 10, this);
 
         //RetrieveAllMessages();
     }
@@ -79,13 +85,24 @@ public class PollingService extends Service implements LocationListener
     }
     */
 
-    public void PopNotifications() {
+    public void createNotification() {
 
-        NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.notif_icon)
-                        .setContentTitle("New Message Discovered!")
-                        .setContentText("Click to locate!");
+        Context context = getApplicationContext();
+        // Set the icon, scrolling text and timestamp
+        Notification notification = new Notification(R.drawable.notif_icon, "New Message!", System.currentTimeMillis());
+
+
+        // The PendingIntent to launch our activity if the user selects this
+        // notification
+        PendingIntent contentIntent = PendingIntent.getActivity(context, 0,
+                new Intent(context, LoginActivity.class), 0);
+
+        // Set the info for the views that show in the notification panel.
+        notification.setLatestEventInfo(context, "New Message!", "A new message has been discovered!",
+                contentIntent);
+
+        // Send the notification.
+        notificationManager.notify("Title", 0, notification);
     }
 
     public void parseJSON(String json) {
@@ -113,14 +130,27 @@ public class PollingService extends Service implements LocationListener
                 String sendAt = jsonMsg.getString("sendAt");
                 int dur = jsonMsg.getInt("duration");
 
-                Message message = new Message (user, msg, id, lat, lng, sentAt, sendAt, dur);
-                newMessages.add(message);
 
-                //message.speak();
+                if (msgArray.length() > MapsActivity.messages.size() && i > MapsActivity.messages.size()) {
+                    Message message = new Message(user, msg, id, lat, lng, sentAt, sendAt, dur);
+                    newMessages.add(message);
+
+                    //message.speak();
+                }
             }
 
-            //MapsActivity.messages.addAll(newMessages);
-            MapsActivity.messages = newMessages;
+            MapsActivity.messages.addAll(newMessages);
+            MapsActivity.updateMarkers();
+
+            if (newMessages.size() > 0) {
+                createNotification();
+            }
+
+            /*
+            if (newMessages.size() != MapsActivity.messages.size()) {
+                MapsActivity.messages = newMessages;
+                MapsActivity.updateMarkers();
+            }*/
         }
         catch(Exception e){
             e.printStackTrace();
@@ -150,17 +180,6 @@ public class PollingService extends Service implements LocationListener
     public void onProviderDisabled(String provider) {}
 
     private class UpdateMessageTask extends AsyncTask<String, Void, String> {
-        private String convertInputStreamToString(InputStream inputStream) throws IOException{
-            BufferedReader bufferedReader = new BufferedReader( new InputStreamReader(inputStream));
-            String line = "";
-            String result = "";
-            while((line = bufferedReader.readLine()) != null)
-                result += line;
-
-            inputStream.close();
-            return result;
-        }
-
         @Override
         protected String doInBackground(String... params) {
             Criteria criteria = new Criteria();
@@ -203,14 +222,14 @@ public class PollingService extends Service implements LocationListener
 
             System.out.println(builder.toString());
 
-            parseJSON(builder.toString());
-
-            return "Done";
+            return builder.toString();
         }
 
         @Override
         protected void onPostExecute(String result) {
             System.out.println(result);
+
+            parseJSON(result);
         }
 
         @Override

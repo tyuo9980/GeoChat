@@ -9,7 +9,6 @@ import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -44,20 +43,7 @@ public class ComposeActivity extends Activity {
 
         System.out.println(lat + " " + lng);
 
-        getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
-
         setContentView(R.layout.activity_compose);
-        getActionBar().setDisplayHomeAsUpEnabled(true);
-
-        /*
-        Button submitButton = (Button) findViewById(R.id.submitButton);
-        submitButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //Toast.makeText(getApplicationContext(), "Message Posted!", Toast.LENGTH_SHORT);
-                //System.out.println("Message Posted!");
-            }
-        });*/
 
         final TextView charLeft = (TextView) findViewById(R.id.charLeftText);
         final EditText messageArea = (EditText) findViewById(R.id.messageArea);
@@ -105,7 +91,7 @@ public class ComposeActivity extends Activity {
         ms = Integer.valueOf(((EditText) findViewById(R.id.duration)).toString());
         Message message = new Message("-1", ((EditText) findViewById(R.id.messageArea)).toString(), lat, lng, "", ms, duration);
         */
-        String message = findViewById(R.id.messageArea).toString();
+        String message = ((EditText)findViewById(R.id.messageArea)).getText().toString();
         System.out.println(message);
         submitMessage(message);
 
