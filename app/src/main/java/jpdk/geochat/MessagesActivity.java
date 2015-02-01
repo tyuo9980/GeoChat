@@ -1,49 +1,40 @@
 package jpdk.geochat;
 
-import android.content.Context;
-import android.database.DataSetObserver;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
-import android.widget.TextView;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-
+import java.util.Date;
 
 public class MessagesActivity extends ActionBarActivity {
 
-    ExpandableListAdapter ela;
-    ArrayList<String> messageDescriptions;
-    ArrayList<String> messageIdentifiers;
+
+    ArrayList<String> messageDescriptions = new ArrayList<String>();
+    ArrayList<String> messageIdentifiers = new ArrayList<String>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_messages);
 
-        //populateList(MapsActivity.messages);
+        populateList(MapsActivity.messages);
     }
 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_messages, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
@@ -55,116 +46,58 @@ public class MessagesActivity extends ActionBarActivity {
     }
 
     public void populateList(ArrayList<Message> messages){
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-        Calendar c = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd\'T\'HH:mm:ss.SSS\'Z\'");
         for (int i = 0; i < messages.size(); i++) {
-            messageIdentifiers.add(String.valueOf(i));
-            c.setTimeInMillis(Long.valueOf(messages.get(i).sentAt));
-            messageDescriptions.add(messages.get(i).message + "\nSend at: " + sdf.format(c) +
-                    "\nBy: " + messages.get(i).user + "\n At: " + messages.get(i).lat + ", " +
-                    messages.get(i).lng);
+            messageIdentifiers.add(String.valueOf(i) + " : \"" + messages.get(i).message + "\"");
+            try {
+                messageDescriptions.add("Sent " + calculateTimeDiff(dateToCalendar(sdf.parse(messages.get(i).sentAt))) +
+                        "\nBy: " + messages.get(i).user + "\nAt: " + messages.get(i).lat + ", " +
+                        messages.get(i).lng);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
         }
-        ela = new ExpandableListAdapter() {
+        MyExpandableListAdapter ela = new MyExpandableListAdapter(this, messageDescriptions, messageIdentifiers);
 
-            Context con;
-            public void ExpandableListAdapter(Context context) {
-                con = context;
-            }
 
-            @Override
-            public void registerDataSetObserver(DataSetObserver observer) {
-
-            }
-
-            @Override
-            public void unregisterDataSetObserver(DataSetObserver observer) {
-
-            }
-
-            @Override
-            public int getGroupCount() {
-                return messageDescriptions.size();
-            }
-
-            @Override
-            public int getChildrenCount(int groupPosition) {
-                return 0;
-            }
-
-            @Override
-            public Object getGroup(int groupPosition) {
-                return null;
-            }
-
-            @Override
-            public Object getChild(int groupPosition, int childPosition) {
-                return messageDescriptions.get(childPosition);
-            }
-
-            @Override
-            public long getGroupId(int groupPosition) {
-                return 0;
-            }
-
-            @Override
-            public long getChildId(int groupPosition, int childPosition) {
-                return 0;
-            }
-
-            @Override
-            public boolean hasStableIds() {
-                return false;
-            }
-
-            @Override
-            public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
-                TextView tv = new TextView(con);
-                tv.setText(messageIdentifiers.get(groupPosition));
-                return tv;
-            }
-
-            @Override
-            public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
-                TextView tv = new TextView(con);
-                tv.setText(messageDescriptions.get(groupPosition));
-                return tv;
-            }
-
-            @Override
-            public boolean isChildSelectable(int groupPosition, int childPosition) {
-                return false;
-            }
-
-            @Override
-            public boolean areAllItemsEnabled() {
-                return false;
-            }
-
-            @Override
-            public boolean isEmpty() {
-                return false;
-            }
-
-            @Override
-            public void onGroupExpanded(int groupPosition) {
-
-            }
-
-            @Override
-            public void onGroupCollapsed(int groupPosition) {
-
-            }
-
-            @Override
-            public long getCombinedChildId(long groupId, long childId) {
-                return 0;
-            }
-
-            @Override
-            public long getCombinedGroupId(long groupId) {
-                return 0;
-            }
-        };
         ((ExpandableListView) findViewById(R.id.expandableListView)).setAdapter(ela);
+    }
+
+    private String calculateTimeDiff(Calendar c) {
+        Calendar current = Calendar.getInstance();
+        long difference = current.getTimeInMillis() - c.getTimeInMillis();
+        if (difference <= 60000) {
+            if (difference < 2000)
+                return "a second ago";
+            return (int)(difference / 1000) + " seconds ago";
+        } else if (difference <= 3600000) {
+            if (difference < 120000)
+                return "a minute ago";
+            return (int)(difference / 60000) + " minutes ago";
+        } else if (difference <= 86400000) {
+            if (difference < 7200000)
+                return "an hour ago";
+            return (int)(difference / 3600000) + " hours ago";
+        } else if (difference <= 604800000) {
+            if (difference < 172800000)
+                return "a day ago";
+            return (int)(difference / 604800000) + " days ago";
+        } else if (difference <= 2419200000l) {
+            if (difference < 1209600000)
+                return "a week ago";
+            return (int)(difference / 604800000) + " weeks ago";
+        } else if (difference <= 378682800000l) {
+            if (difference < 63113800000l)
+                return "a month ago";
+            return (int)(difference / 31556900000l) + " months ago";
+        } else if (difference < 63113800000l)
+            return "a year ago";
+        return (int) (difference / 31556900000l) + " years ago";
+    }
+
+    public static Calendar dateToCalendar(Date date){
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        return cal;
     }
 }

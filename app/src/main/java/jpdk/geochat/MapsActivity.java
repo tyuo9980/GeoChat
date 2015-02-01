@@ -43,18 +43,22 @@ public class MapsActivity extends ActionBarActivity {
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         String provider = locationManager.getBestProvider(criteria, false);
         Location location = locationManager.getLastKnownLocation(provider);
-        double lat =  location.getLatitude();
-        double lng = location.getLongitude();
-        LatLng coordinate = new LatLng(lat, lng);
+        if (location != null) {
 
-        CameraUpdate center = CameraUpdateFactory.newLatLng(coordinate);
-        CameraUpdate zoom = CameraUpdateFactory.zoomTo(15);
+            double lat = location.getLatitude();
+            double lng = location.getLongitude();
+            LatLng coordinate = new LatLng(lat, lng);
 
-        map.moveCamera(center);
-        map.animateCamera(zoom);
+            CameraUpdate center = CameraUpdateFactory.newLatLng(coordinate);
+            CameraUpdate zoom = CameraUpdateFactory.zoomTo(15);
 
+            map.moveCamera(center);
+            map.animateCamera(zoom);
+        }
         //start polling service
         startService(new Intent(this, PollingService.class));
+
+        //updateMarkers();
     }
 
     @Override
@@ -81,6 +85,12 @@ public class MapsActivity extends ActionBarActivity {
             case R.id.map_friends:
                 openFriends();
                 return true;
+            case R.id.map_messages:
+                openMessages();
+                return true;
+            case R.id.map_logoff:
+                logOff();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -90,6 +100,21 @@ public class MapsActivity extends ActionBarActivity {
         Intent intent = new Intent(this, FriendsActivity.class);
         startActivity(intent);
     }
+
+    private void openMessages(){
+        Intent intent = new Intent(this, MessagesActivity.class);
+        startActivity(intent);
+    }
+
+    private void logOff(){
+        /*Session session = Session.getActiveSession();
+        if(session != null && session.isOpened()){
+            session.closeAndClearTokenInformation();
+        }
+        finish();
+        */
+    }
+
 
     private void setUpMapIfNeeded() {
         // Do a null check to confirm that we have not already instantiated the map.
@@ -106,10 +131,9 @@ public class MapsActivity extends ActionBarActivity {
 
                     @Override
                     public void onMyLocationChange(Location loc) {
-                        // TODO Auto-generated method stub
                         currentLocation = loc;
 
-                        map.clear();
+                        updateMarkers();
                     }
                 });
             }
@@ -120,15 +144,29 @@ public class MapsActivity extends ActionBarActivity {
         Intent intent = new Intent(this, ComposeActivity.class);
         intent.putExtra("lat", currentLocation.getLatitude());
         intent.putExtra("lng", currentLocation.getLongitude());
-        startActivity(intent);
+        startActivityForResult(intent, 0);
     }
 
     public static void updateMarkers(){
         map.clear();
 
+        System.out.println("updating markers: " + messages.size());
+
         for (int i = 0; i < messages.size(); i++){
             map.addMarker(new MarkerOptions().position(new LatLng(messages.get(i).lat, messages.get(i).lng)));
         }
+    }
+
+    public boolean checkIfNear() {
+        for (int i = 0; i < messages.size(); i++){
+            if (Math.sqrt(((messages.get(i)).lat - currentLocation.getLatitude()) *
+                    ((messages.get(i)).lat - currentLocation.getLatitude())  +
+                    ((messages.get(i)).lng - currentLocation.getLongitude()) * ((messages.get(i)).lng
+                            - currentLocation.getLongitude())) * 6371000 > 50.0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void messages(View view) {
