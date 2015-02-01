@@ -27,21 +27,30 @@
         android:layout_height="wrap_content"
         android:text="Submit Message"
         android:id="@+id/submitButton"
-        android:layout_below="@+id/messageArea"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:onClick="submit"
+        android:layout_below="@+id/charLeftText"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:id="@+id/charLeftText"
-        android:layout_alignTop="@+id/submitButton"
+        android:hint="140 characters left"
+        android:layout_alignTop="@+id/duration"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignBottom="@+id/submitButton"
-        android:layout_toLeftOf="@+id/submitButton"
-        android:layout_toStartOf="@+id/submitButton"
-        android:hint="140 characters left" />
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text=""
+        android:id="@+id/duration"
+        android:hint="Duration"
+        android:layout_below="@+id/messageArea"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
 
 </RelativeLayout>

@@ -1,7 +1,9 @@
 package jpdk.geochat;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.Message;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Menu;
@@ -12,13 +14,22 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.util.Calendar;
+
 
 public class ComposeActivity extends Activity {
+
+    String messageBody = "";
+    double lat = 0.0;
+    double lng = 0.0;
+    int duration = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        Intent intent = this.getIntent();
+        lat = intent.getLongExtra("lat", 0);
+        lng = intent.getLongExtra("lng", 0);
         getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
 
         setContentView(R.layout.activity_compose);
@@ -71,4 +82,15 @@ public class ComposeActivity extends Activity {
 
         return super.onOptionsItemSelected(item);
     }
+
+    public void submit(View view) {
+        Calendar c = Calendar.getInstance();
+        long ms = c.getTimeInMillis();
+        ms = Integer.valueOf(((EditText) findViewById(R.id.duration)).toString());
+        Message message = new Message("-1", ((EditText) findViewById(R.id.messageArea)).toString(), lat, lng, "", ms, duration);
+        submitMessage(message);
+        finish();
+    }
+
+
 }
