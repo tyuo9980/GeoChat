@@ -10,15 +10,12 @@ import android.widget.TextView;
 import java.security.acl.Group;
 import java.util.ArrayList;
 
-/**
- * Created by peterli on 15-02-01.
- */
-public class MyExpandableListAdapter implements ExpandableListAdapter {
+public class MessageListAdapter implements ExpandableListAdapter {
     ArrayList<String> messageDescriptions;
     ArrayList<String> messageIdentifiers;
     Context context;
 
-    public MyExpandableListAdapter(Context context,ArrayList<String> messageDescriptions, ArrayList<String> messageIdentifiers) {
+    public MessageListAdapter(Context context, ArrayList<String> messageDescriptions, ArrayList<String> messageIdentifiers) {
         super();
         this.messageDescriptions = messageDescriptions;
         this.messageIdentifiers = messageIdentifiers;

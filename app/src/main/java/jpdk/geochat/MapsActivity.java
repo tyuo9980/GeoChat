@@ -43,7 +43,6 @@ public class MapsActivity extends ActionBarActivity implements
 
     public static GoogleMap map;
     public Location currentLocation = null;
-    public String messageBody = null;
 
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
@@ -80,8 +79,6 @@ public class MapsActivity extends ActionBarActivity implements
 
         //start polling service
         startService(new Intent(this, PollingService.class));
-
-        //updateMarkers();
     }
 
     @Override
@@ -92,7 +89,6 @@ public class MapsActivity extends ActionBarActivity implements
 
     @Override
     protected void onStop() {
-        // Disconnecting the client invalidates it.
         mGoogleApiClient.disconnect();
         super.onStop();
     }
@@ -131,7 +127,6 @@ public class MapsActivity extends ActionBarActivity implements
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_maps, menu);
         return super.onCreateOptionsMenu(menu);
@@ -140,9 +135,6 @@ public class MapsActivity extends ActionBarActivity implements
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         switch (item.getItemId()) {
             case R.id.map_friends:
                 openFriends();
@@ -185,12 +177,9 @@ public class MapsActivity extends ActionBarActivity implements
     }
 
     private void initializeMap() {
-        // Do a null check to confirm that we have not already instantiated the map.
         if (map == null) {
-            // Try to obtain the map from the SupportMapFragment.
             map = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
             map.setMyLocationEnabled(true);
-
         }
     }
 

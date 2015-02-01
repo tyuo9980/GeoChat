@@ -6,7 +6,6 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -88,20 +87,15 @@ public class PollingService extends Service implements LocationListener
     public void createNotification() {
 
         Context context = getApplicationContext();
-        // Set the icon, scrolling text and timestamp
+
         Notification notification = new Notification(R.drawable.notif_icon, "New Message!", System.currentTimeMillis());
 
-
-        // The PendingIntent to launch our activity if the user selects this
-        // notification
         PendingIntent contentIntent = PendingIntent.getActivity(context, 0,
                 new Intent(context, LoginActivity.class), 0);
 
-        // Set the info for the views that show in the notification panel.
         notification.setLatestEventInfo(context, "New Message!", "A new message has been discovered!",
                 contentIntent);
 
-        // Send the notification.
         notificationManager.notify("Title", 0, notification);
     }
 
@@ -159,11 +153,6 @@ public class PollingService extends Service implements LocationListener
 
     //Location Listener
     public void onLocationChanged(Location location) {
-        if (initialLoad) {
-            initialLoad = false;
-            //RetrieveAllMessages();
-        }
-
         UpdateMessages();
         //MapsActivity.updateMarkers();
 
@@ -182,16 +171,6 @@ public class PollingService extends Service implements LocationListener
     private class UpdateMessageTask extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... params) {
-            Criteria criteria = new Criteria();
-            LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            String provider = locationManager.getBestProvider(criteria, false);
-            Location location = locationManager.getLastKnownLocation(provider);
-
-            System.out.println("bg " + lat + " " + lng);
-
-            String result = "";
-            InputStream inputStream = null;
-
             StringBuilder builder = new StringBuilder();
             HttpClient client = new DefaultHttpClient();
             HttpGet httpGet = new HttpGet(retrieveURL + "?lat=" + lat + "&lng=" + lng + "&since=1");

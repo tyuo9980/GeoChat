@@ -49,7 +49,7 @@ public class MessagesActivity extends ActionBarActivity {
                     "\nBy: " + messages.get(i).user + "\n At: " + messages.get(i).lat + ", " +
                     messages.get(i).lng);
         }
-        MyExpandableListAdapter ela = new MyExpandableListAdapter(this, messageDescriptions, messageIdentifiers);
+        MessageListAdapter ela = new MessageListAdapter(this, messageDescriptions, messageIdentifiers);
 
 
         ((ExpandableListView) findViewById(R.id.expandableListView)).setAdapter(ela);
