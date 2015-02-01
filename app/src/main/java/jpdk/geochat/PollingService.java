@@ -61,9 +61,8 @@ public class PollingService extends Service implements LocationListener
         System.out.println("Congrats! MyService started");
         Log.d(TAG, "onStart");
 
-        //locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 10, this);
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 10, this);
-        //locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 10, this);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 5, this);
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 5, this);
 
         //RetrieveAllMessages();
     }
@@ -153,11 +152,10 @@ public class PollingService extends Service implements LocationListener
 
     //Location Listener
     public void onLocationChanged(Location location) {
-        UpdateMessages();
-        //MapsActivity.updateMarkers();
-
         lat =  location.getLatitude();
         lng = location.getLongitude();
+
+        UpdateMessages();
 
         System.out.println(lat + " " + lng);
     }

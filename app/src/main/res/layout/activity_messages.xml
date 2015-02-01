@@ -12,6 +12,7 @@
         android:id="@+id/expandableListView"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true" />
+        android:layout_alignParentTop="true"
+        android:groupIndicator="@null"/>
 
 </RelativeLayout>

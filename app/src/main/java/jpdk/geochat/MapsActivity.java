@@ -97,7 +97,7 @@ public class MapsActivity extends ActionBarActivity implements
     public void onConnected(Bundle bundle) {
         mLocationRequest = LocationRequest.create();
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        mLocationRequest.setInterval(60000);
+        mLocationRequest.setInterval(5000);
         mLocationRequest.setSmallestDisplacement(5);
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
     }
@@ -116,6 +116,7 @@ public class MapsActivity extends ActionBarActivity implements
     public void onLocationChanged(Location location) {
         if(location!=null){
             currentLocation = location;
+            System.out.println ("Location Updated!");
         }
     }
 
@@ -162,18 +163,12 @@ public class MapsActivity extends ActionBarActivity implements
 
     private void logOff(){
         Session session = Session.getActiveSession();
+
         if(session != null && session.isOpened()){
             session.closeAndClearTokenInformation();
         }
+
         finish();
-
-    }
-
-    protected void createLocationRequest() {
-        LocationRequest mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(10000);
-        mLocationRequest.setFastestInterval(5000);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 
     private void initializeMap() {

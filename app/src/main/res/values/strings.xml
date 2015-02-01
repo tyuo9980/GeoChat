@@ -14,5 +14,11 @@
     <string name="menu_friends">Friends</string>
     <string name="menu_logoff">Log Off</string>
     <string name="menu_messages">Messages</string>
+    <string-array name="expiry">
+        <item>None</item>
+        <item>1 day</item>
+        <item>7 days</item>
+        <item>30 days</item>
+    </string-array>
 
 </resources>

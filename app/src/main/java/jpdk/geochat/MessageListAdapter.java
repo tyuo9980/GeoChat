@@ -15,26 +15,27 @@ public class MessageListAdapter implements ExpandableListAdapter {
     ArrayList<String> messageIdentifiers;
     Context context;
 
-    public MessageListAdapter(Context context, ArrayList<String> messageDescriptions, ArrayList<String> messageIdentifiers) {
+    public MessageListAdapter(Context context,ArrayList<String> messageDescriptions, ArrayList<String> messageIdentifiers) {
         super();
         this.messageDescriptions = messageDescriptions;
         this.messageIdentifiers = messageIdentifiers;
         this.context = context;
     }
     public Object getChild(int groupPosition, int childPosition) {
-        return messageDescriptions.get(childPosition);
+        //return messageDescriptions.get(childPosition);
+        return null;
     }
     public long getChildId(int groupPosition, int childPosition) {
         return childPosition;
     }
     @Override
     public int getChildrenCount(int groupPosition) {
-        return messageIdentifiers.size();
+        return 1;
     }
     public View getChildView(int groupPosition, int childPosition, boolean isLastChild,
                              View convertView, ViewGroup parent) {
         TextView tv = new TextView(context);
-        tv.setText(messageDescriptions.get(childPosition));
+        tv.setText(messageDescriptions.get(groupPosition));
         return tv;
     }
     public Group getGroup(int groupPosition) {
@@ -52,6 +53,7 @@ public class MessageListAdapter implements ExpandableListAdapter {
     }
 
     public int getGroupCount() {
+        System.out.println(messageIdentifiers.size());
         return messageIdentifiers.size();
     }
     public long getGroupId(int groupPosition) {
@@ -61,6 +63,8 @@ public class MessageListAdapter implements ExpandableListAdapter {
                              ViewGroup parent) {
         TextView tv = new TextView(context);
         tv.setText(messageIdentifiers.get(groupPosition));
+        tv.setTextSize(25f);
+        tv.setMinHeight(30);
         return tv;
     }
     public boolean isChildSelectable(int groupPosition, int childPosition) {
